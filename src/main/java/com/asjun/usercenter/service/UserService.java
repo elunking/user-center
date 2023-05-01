@@ -3,6 +3,7 @@ package com.asjun.usercenter.service;
 
 import com.asjun.usercenter.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * 用户服务接口
@@ -19,5 +20,7 @@ public interface UserService extends IService<User> {
      * @return 用户id
      */
     long userRegister(String userAccount,String userPassword,String checkPassword);
+
+    User userLogin(String userAccount, String userPassword, HttpServletRequest request);
 
 }
