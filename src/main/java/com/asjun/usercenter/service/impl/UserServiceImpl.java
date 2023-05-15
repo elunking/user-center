@@ -14,6 +14,8 @@ import org.springframework.util.DigestUtils;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.asjun.usercenter.constant.UserConstant.*;
+
 /**
  * @author asjun
  * @description 针对表【user(用户)】的数据库操作Service实现
@@ -23,7 +25,6 @@ import java.util.regex.Pattern;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     private static final String SALT = "ajsun";
-    private static final String USER_LOGIN_STATE = "userLoginState";
 
     @Resource
     private UserMapper userMapper;
@@ -34,7 +35,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @param userAccount   用户账号
      * @param userPassword  用户密码
      * @param checkPassword 检验密码
-     * @return
+     * @return 返回用户id
      */
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -48,7 +49,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (userPassword.length() < 8) return -1;
 
         //检查账户是否包含特殊字符
-        String pattern = "[`~!@#$%^&*()+=|{}':;',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
+        String pattern = "[`~!@#$%^&*()+=|{}':;,\\[\\].<>/?！￥…（）—【】‘；：”“’。，、？]";
         Pattern p = Pattern.compile(pattern);
         Matcher matcher = p.matcher(userAccount);
         if (matcher.find()) return -1;
@@ -74,6 +75,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return user.getId();
     }
 
+
+    /**
+     * 用户登录接口实现
+     * @param userAccount 登录账户
+     * @param userPassword 登录密码
+     * @param request 用户请求
+     * @return 返回脱敏信息
+     */
     @Override
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         // 1.校验
@@ -85,7 +94,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (userPassword.length() < 8) return null;
 
         //检查账户是否包含特殊字符
-        String pattern = "[`~!@#$%^&*()+=|{}':;',\\[\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？]";
+        String pattern = "[`~!@#$%^&*()+=|{}':;,\\[\\].<>/?！￥…（）—【】‘；：”“’。，、？]";
         Pattern p = Pattern.compile(pattern);
         Matcher matcher = p.matcher(userAccount);
         if (matcher.find()) return null;
@@ -95,29 +104,39 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         // 2.校验密码是否输入正确，要和数据库中的密文密码区对比
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("userAccount",userAccount);
-        queryWrapper.eq("userPassword",digestedPassword);
+        queryWrapper.eq("userAccount",userAccount).eq("userPassword",digestedPassword);
         User user = userMapper.selectOne(queryWrapper);
         if(user == null) return null;
 
         // 3.对用户信息进行脱敏
-        User safeUser = new User();
-        safeUser.setId(user.getId());
-        safeUser.setUserAccount(user.getUserAccount());
-        safeUser.setUsername(user.getUsername());
-        safeUser.setAvatarUrl(user.getAvatarUrl());
-        safeUser.setGender(user.getGender());
-        safeUser.setPhone(user.getPhone());
-        safeUser.setEmail(user.getEmail());
-        safeUser.setUserStatus(user.getUserStatus());
-        safeUser.setUserRole(user.getUserRole());
+        User safeUser = getSaftyUser(user);
 
         // 4.记录用户的登录态，将其存到服务器上（session）
         request.getSession().setAttribute(USER_LOGIN_STATE,safeUser);
 
         // 5.返回脱敏后的用户信息
         return safeUser;
+    }
 
+    /**
+     * 用户数据脱敏接口实现
+     * @param originUser 源用户数据
+     * @return 返回脱敏后的数据
+     */
+    @Override
+    public User getSaftyUser(User originUser){
+        User safeUser = new User();
+        safeUser.setId(originUser.getId());
+        safeUser.setUserAccount(originUser.getUserAccount());
+        safeUser.setUsername(originUser.getUsername());
+        safeUser.setAvatarUrl(originUser.getAvatarUrl());
+        safeUser.setGender(originUser.getGender());
+        safeUser.setPhone(originUser.getPhone());
+        safeUser.setEmail(originUser.getEmail());
+        safeUser.setUserStatus(originUser.getUserStatus());
+        safeUser.setUserRole(originUser.getUserRole());
+        safeUser.getCreateTime();
+        return safeUser;
     }
 }
 

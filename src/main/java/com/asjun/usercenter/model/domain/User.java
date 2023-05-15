@@ -88,7 +88,7 @@ public class User implements Serializable {
     private Integer isDelete;
 
     /**
-     * 用户角色0-普通用户1，-管理官
+     * 用户角色    0-普通用户   1-管理员
      */
     @TableField(value = "userRole")
     private Integer userRole;

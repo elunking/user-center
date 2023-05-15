@@ -15,7 +15,7 @@ class UserServiceImplTest {
 
     @Test
     void userRegister() {
-        String userAccount = "mikeasir";
+        String userAccount = "pityjun";
         String userPassword = "123456789";
         String checkPassword = "123456789";
         //判断非空
