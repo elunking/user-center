@@ -93,6 +93,12 @@ public class User implements Serializable {
     @TableField(value = "userRole")
     private Integer userRole;
 
+    /**
+     * 星球编号
+     */
+    @TableField(value = "planetId")
+    private String planetId;
+
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
 }

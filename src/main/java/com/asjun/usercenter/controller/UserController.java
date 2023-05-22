@@ -1,5 +1,9 @@
 package com.asjun.usercenter.controller;
 
+import com.asjun.usercenter.common.BaseResponse;
+import com.asjun.usercenter.common.ErrorCode;
+import com.asjun.usercenter.common.ResultUtils;
+import com.asjun.usercenter.exception.BusinessException;
 import com.asjun.usercenter.model.domain.User;
 import com.asjun.usercenter.model.request.UserLoginRequest;
 import com.asjun.usercenter.model.request.UserRegisterRequest;
@@ -28,49 +32,66 @@ public class UserController {
 
 
     @PostMapping("/register")
-    public Long userRegister(@RequestBody UserRegisterRequest registerRequest) {
-        if (registerRequest == null) return null;
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest registerRequest) {
+        if (registerRequest == null) throw new BusinessException(ErrorCode.PARAMS_ERROR);
         String userAccount = registerRequest.getUserAccount();
         String userPassword = registerRequest.getUserPassword();
         String checkPassword = registerRequest.getCheckPassword();
-        return userService.userRegister(userAccount, userPassword, checkPassword);
+        String planetId = registerRequest.getPlanetId();
+        long id = userService.userRegister(userAccount, userPassword, checkPassword, planetId);
+        return ResultUtils.success(id);
     }
 
     @PostMapping("/login")
-    public User userLogin(@RequestBody UserLoginRequest loginRequest, HttpServletRequest request) {
-        if (loginRequest == null) return null;
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest loginRequest, HttpServletRequest request) {
+        if (loginRequest == null) throw new BusinessException(ErrorCode.PARAMS_ERROR);
         String userAccount = loginRequest.getUserAccount();
         String userPassword = loginRequest.getUserPassword();
-        return userService.userLogin(userAccount, userPassword, request);
+        User user = userService.userLogin(userAccount, userPassword, request);
+        return ResultUtils.success(user);
     }
 
     @GetMapping("/current")
-    public User getCurrentUser(HttpServletRequest request) {
+    public BaseResponse<User> getCurrentUser(HttpServletRequest request) {
         Object attribute = request.getSession().getAttribute(USER_LOGIN_STATE);
-        if (attribute == null) return null;
+        if (attribute == null) throw new BusinessException(ErrorCode.NOT_LOGIN,"未登录");
         User userObj = (User) attribute;
         Long id = userObj.getId();
         User user = userService.getById(id);
-        return userService.getSaftyUser(user);
+        return ResultUtils.success(user);
     }
 
     @GetMapping("/search")
-    public List<User> searchUsers(String username, HttpServletRequest request) {
-        if (!isAdmin(request)) return null;
+    public BaseResponse<List<User>> searchUsers(String username, HttpServletRequest request) {
+        if (!isAdmin(request)) throw new BusinessException(ErrorCode.NOT_AUTH,"该用户不是管理员");
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(username)) {
             queryWrapper.like("username", username);
         }
         List<User> userList = userService.list(queryWrapper);
-        return userList.stream().map(user -> userService.getSaftyUser(user)).toList();
+        List<User> users = userList.stream().map(user -> userService.getSaftyUser(user)).toList();
+        return ResultUtils.success(users);
     }
 
     @PostMapping("/delete")
-    public boolean deleteUser(@RequestBody long id, HttpServletRequest request) {
-        if (!isAdmin(request)) return false;
-        if (id < 0) return false;
-        return userService.removeById(id);
+    public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) {
+        if (!isAdmin(request)) throw new BusinessException(ErrorCode.NULL_ERROR,"该用户不是管理员");
+        if (id < 0) throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        boolean b = userService.removeById(id);
+        return ResultUtils.success(b);
     }
+
+    /**
+     * 用户注销请求
+     * @param request 当前注销请求
+     * @return 成功返回1
+     */
+
+    @PostMapping("/logout")
+    public Integer userLogout(HttpServletRequest request){
+        return userService.userLogout(request);
+    }
+
 
     /**
      * 是否是管理员

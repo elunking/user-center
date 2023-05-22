@@ -3,6 +3,7 @@ package com.asjun.usercenter.service.impl;
 
 import com.asjun.usercenter.service.UserService;
 import jakarta.annotation.Resource;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
@@ -15,9 +16,10 @@ class UserServiceImplTest {
 
     @Test
     void userRegister() {
-        String userAccount = "pityjun";
+        String userAccount = "startpick";
         String userPassword = "123456789";
         String checkPassword = "123456789";
+        String planetId = "123";
         //判断非空
 //        userAccount ="";
 //        long l = userService.userRegister(userAccount, userPassword, checkPassword);
@@ -48,7 +50,11 @@ class UserServiceImplTest {
 //        long l = userService.userRegister(userAccount, userPassword, checkPassword);
 //        Assertions.assertEquals(-1, l);
 
-        long result = userService.userRegister(userAccount, userPassword, checkPassword);
+        planetId = "123";
+        long l = userService.userRegister(userAccount, userPassword, checkPassword,planetId);
+        Assertions.assertEquals(-1,l);
+
+        long result = userService.userRegister(userAccount, userPassword, checkPassword,planetId);
         System.out.println(result);
     }
 }
