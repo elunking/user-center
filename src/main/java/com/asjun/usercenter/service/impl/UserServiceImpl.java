@@ -45,7 +45,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 1.校验
 
         //判空
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, planetId)) throw new BusinessException(ErrorCode.PARAMS_ERROR);;
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, planetId)) throw new BusinessException(ErrorCode.PARAMS_ERROR);
         //账户不能小于4位
         if (userAccount.length() < 4) throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户应该大于4为");
         //密码长度不能小于8位
@@ -57,22 +57,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String pattern = "[`~!@#$%^&*()+=|{}':;,\\[\\].<>/?！￥…（）—【】‘；：”“’。，、？]";
         Pattern p = Pattern.compile(pattern);
         Matcher matcher = p.matcher(userAccount);
-        if (matcher.find()) throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户包含特殊字符！");;
+        if (matcher.find()) throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户包含特殊字符！");
 
         //检验密码和校验密码是否相同
-        if (!userPassword.equals(checkPassword)) throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次密码不相同");;
+        if (!userPassword.equals(checkPassword)) throw new BusinessException(ErrorCode.PARAMS_ERROR, "两次密码不相同");
 
         //账户不能重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", userAccount);
         long result = userMapper.selectCount(queryWrapper);
-        if (result > 0) throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户不能重复");;
+        if (result > 0) throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户不能重复");
 
         //星球编号不能重复
         QueryWrapper queryWrapper1 = new QueryWrapper();
         queryWrapper1.eq("planetId", planetId);
         Long count = userMapper.selectCount(queryWrapper1);
-        if (count > 0) throw new BusinessException(ErrorCode.PARAMS_ERROR, "星球编号应该小于5位");;
+        if (count > 0) throw new BusinessException(ErrorCode.PARAMS_ERROR, "星球编号应该小于5位");
 
         //3. 对密码进行加密
         String digestedPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -83,7 +83,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setUserPassword(digestedPassword);
         user.setPlanetId(planetId);
         int insert = userMapper.insert(user);
-        if (!(insert > 0)) throw new BusinessException(ErrorCode.PARAMS_ERROR,"注册失败！");;
+        if (!(insert > 0)) throw new BusinessException(ErrorCode.PARAMS_ERROR,"注册失败！");
         return user.getId();
     }
 
@@ -100,17 +100,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         // 1.校验
         //判空
-        if (StringUtils.isAnyBlank(userAccount, userPassword)) throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名或密码错误");;
+        if (StringUtils.isAnyBlank(userAccount, userPassword)) throw new BusinessException(ErrorCode.PARAMS_ERROR, "用户名或密码错误");
         //账户不能小于4位
-        if (userAccount.length() < 4) throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户应该大于4为");;
+        if (userAccount.length() < 4) throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户应该大于4为");
         //密码长度不能小于8位
-        if (userPassword.length() < 8) throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码应该大于8为");;
+        if (userPassword.length() < 8) throw new BusinessException(ErrorCode.PARAMS_ERROR, "密码应该大于8为");
 
         //检查账户是否包含特殊字符
         String pattern = "[`~!@#$%^&*()+=|{}':;,\\[\\].<>/?！￥…（）—【】‘；：”“’。，、？]";
         Pattern p = Pattern.compile(pattern);
         Matcher matcher = p.matcher(userAccount);
-        if (matcher.find()) throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户包含特殊字符");;
+        if (matcher.find()) throw new BusinessException(ErrorCode.PARAMS_ERROR, "账户包含特殊字符");
 
         //对密码进行加密;
         String digestedPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -119,7 +119,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", userAccount).eq("userPassword", digestedPassword);
         User user = userMapper.selectOne(queryWrapper);
-        if (user == null) throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户名或密码错误！");;
+        if (user == null) throw new BusinessException(ErrorCode.PARAMS_ERROR,"用户名或密码错误！");
 
         // 3.对用户信息进行脱敏
         User safeUser = getSaftyUser(user);
