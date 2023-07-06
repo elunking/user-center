@@ -17,3 +17,4 @@ mybatis-plus:
 server:
   servlet:
     context-path: /api
+  address: 0.0.0.0
